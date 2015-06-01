@@ -1,0 +1,5 @@
+module.exports = {
+  clientID: 'xxx',
+  clientSecret: 'xxx',
+  db_uri: 'localhost:27017/renren'
+}
