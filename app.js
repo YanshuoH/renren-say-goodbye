@@ -6,13 +6,18 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var passport = require('passport');
+var RenrenStrategy = require('passport-renren').Strategy;
 var session = require('express-session');
-
+var mongo = require('mongo');
+var monk = require('monk');
+var async = require('async');
 
 var config = require('./config');
 var routes = require('./routes/index');
 
 var app = express();
+var db = monk(config.db_uri);
+
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -69,6 +74,63 @@ app.use(function(err, req, res, next) {
     error: {}
   });
 });
+
+passport.serializeUser(function(user, done) {
+  console.log('serialize user');
+  done(null, user.id);
+});
+
+passport.deserializeUser(function(id, done) {
+  console.log('deserialize user');
+  // query the current user from database
+  var userCollection = db.get('users');
+  userCollection.findOne({ id: id }, function(err, user) {
+    done(err, user);
+  });
+});
+
+// passport auth
+passport.use(new RenrenStrategy({
+  clientID: config.clientID,
+  clientSecret: config.clientSecret,
+  callbackURL: 'http://127.0.0.1:3000/renren-auth/callback'
+}, function(accessToken, refreshToken, profile, done) {
+  async.waterfall([
+    function(callback) {
+      var userCollection = db.get('users');
+
+      userCollection.findOne({ id: profile.id }, function(err, user) {
+        console.log('Found user id:' + profile.id);
+        if (err) {
+          callback(err);
+        } else {
+          callback(null, user, profile);
+        }
+      })
+    },
+    function(user, profile, callback) {
+      var userCollection = db.get('users');
+      if (user === undefined || user === null) {
+        user = {
+          id: profile.id,
+          name: profile.name
+        }
+        userCollection.insert(user, function(err, doc) {
+          console.log('Save user');
+          if (err) {
+            callback(err);
+          } else {
+            callback(null, user);
+          }
+        });
+      }
+
+      callback(null, user);
+    }
+  ], function(err, user) {
+    done(err, user);
+  });
+}));
 
 module.exports = app;
 
