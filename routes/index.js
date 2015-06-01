@@ -1,9 +1,19 @@
-var express = require('express');
-var router = express.Router();
+module.exports = function(app, config, passport) {
+  app.get('/', function(req, res, next) {
+    res.render('index', { title: 'Express' });
+  });
 
-/* GET home page. */
-router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Express' });
-});
+  // Login middleware
+  app.get('/login', passport.authenticate('renren'));
 
-module.exports = router;
+  app.get('/renren-auth/callback',
+    passport.authenticate(
+      'renren',
+      { failureRedirect: '/' }
+    ),
+    function(req, res) {
+      console.log('ok');
+      res.redirect('/');
+    }
+  );
+}

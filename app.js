@@ -8,8 +8,9 @@ var bodyParser = require('body-parser');
 var passport = require('passport');
 var session = require('express-session');
 
+
+var config = require('./config');
 var routes = require('./routes/index');
-var users = require('./routes/users');
 
 var app = express();
 
@@ -35,8 +36,8 @@ app.use(passport.session());
 app.use(require('stylus').middleware(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', routes);
-app.use('/users', users);
+// All routes here
+routes(app, config, passport);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -68,7 +69,6 @@ app.use(function(err, req, res, next) {
     error: {}
   });
 });
-
 
 module.exports = app;
 
