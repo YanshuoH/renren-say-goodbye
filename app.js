@@ -1,4 +1,5 @@
-var http = require('http');
+var fs = require('fs');
+var https = require('https');
 var express = require('express');
 var path = require('path');
 var favicon = require('serve-favicon');
@@ -93,7 +94,7 @@ passport.deserializeUser(function(id, done) {
 passport.use(new RenrenStrategy({
   clientID: config.clientID,
   clientSecret: config.clientSecret,
-  callbackURL: 'http://127.0.0.1:3000/renren-auth/callback'
+  callbackURL: 'https://127.0.0.1:3000/renren-auth/callback'
 }, function(accessToken, refreshToken, profile, done) {
   async.waterfall([
     function(callback) {
@@ -104,16 +105,17 @@ passport.use(new RenrenStrategy({
         if (err) {
           callback(err);
         } else {
-          callback(null, user, profile);
+          callback(null, user, profile, accessToken);
         }
       })
     },
-    function(user, profile, callback) {
+    function(user, profile, accessToken, callback) {
       var userCollection = db.get('users');
       if (user === undefined || user === null) {
         user = {
           id: profile.id,
-          name: profile.name
+          name: profile.name,
+          accessToken: accessToken
         }
         userCollection.insert(user, function(err, doc) {
           console.log('Save user');
@@ -134,6 +136,11 @@ passport.use(new RenrenStrategy({
 
 module.exports = app;
 
-http.createServer(app).listen(3000, function() {
+
+httpsOptions = {
+  key: fs.readFileSync('./key.pem'),
+  cert: fs.readFileSync('./key-cert.pem')
+}
+https.createServer(httpsOptions, app).listen(3000, function() {
   console.log('Express server lisening on port 3000');
 });
