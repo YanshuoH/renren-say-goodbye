@@ -125,6 +125,20 @@ passport.use(new RenrenStrategy({
             callback(null, user);
           }
         });
+      } else {
+        user.accessToken = accessToken;
+        // update doc
+        userCollection.update(
+          { id: user.id },
+          { $set: { "accessToken": accessToken }},
+          function (err, doc) {
+            if (err) {
+              callback(err);
+            } else {
+              callback(null, user);
+            }
+          }
+        )
       }
 
       callback(null, user);
