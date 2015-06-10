@@ -94,7 +94,8 @@ passport.deserializeUser(function(id, done) {
 passport.use(new RenrenStrategy({
   clientID: config.clientID,
   clientSecret: config.clientSecret,
-  callbackURL: 'https://127.0.0.1:3000/renren-auth/callback'
+  callbackURL: 'https://127.0.0.1:3000/renren-auth/callback',
+  scope: ['read_user_blog', 'read_user_photo', 'read_user_album', 'read_user_status']
 }, function(accessToken, refreshToken, profile, done) {
   async.waterfall([
     function(callback) {

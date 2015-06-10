@@ -1,5 +1,6 @@
 module.exports = {
   clientID: 'xxx',
   clientSecret: 'xxx',
-  db_uri: 'localhost:27017/renren'
+  db_uri: 'localhost:27017/renren',
+  renren_api_uri: 'api.renren.com'
 }
