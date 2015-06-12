@@ -34,7 +34,8 @@ app.use(cookieParser());
 app.use(session({
     secret: 'whatever',
     resave: true,
-    saveUninitialized: true
+    saveUninitialized: true,
+    cookie: 7*24*3600000
 }));
 app.use(passport.initialize());
 app.use(passport.session());

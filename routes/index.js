@@ -38,11 +38,22 @@ module.exports = function(app, config, passport) {
       method: 'GET'
     };
 
-    https.get(options, function(res) {
-      console.log('STATUS: ' + res.statusCode);
-      res.on("data", function(chunk) {
-        console.log("BODY: " + chunk);
+    https.get(options, function(resHttps) {
+      console.log('STATUS: ' + resHttps.statusCode);
+
+      var output = '';
+      resHttps.on('data', function(chunk) {
+        output += chunk;
       });
+
+      resHttps.on('end', function() {
+        var obj = JSON.parse(output);
+        console.log(obj);
+        res.redirect('/');
+      });
+
+    }).on('error', function(err) {
+      console.log(err);
     });
   })
 }
