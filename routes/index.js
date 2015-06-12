@@ -1,6 +1,6 @@
 module.exports = function(app, config, passport) {
   var config = require('../config');
-  var https = require('https');
+  var Request = require('../lib/Request');
 
   var requiresLogin = function(req, res, next) {
     if (req.isAuthenticated()) {
@@ -28,33 +28,20 @@ module.exports = function(app, config, passport) {
     }
   );
 
-  app.get('/status', [requiresLogin], function(req, res) {
-    console.log(req.user);
-    var requestPath = '/v2/status/list?access_token=' + req.user.accessToken + '&ownerId=' + req.user.id;
-    console.log('Request Path: ' + requestPath);
+  app.get('/blog', function(req, res) {
     var options = {
       host: config.renren_api_uri,
-      path: requestPath,
-      method: 'GET'
+      endpoint: config.api.blog_list,
     };
 
-    https.get(options, function(resHttps) {
-      resHttps.setEncoding('utf-8');
-      console.log('STATUS: ' + resHttps.statusCode);
+    var params = {
+      access_token: req.user.accessToken,
+      ownerId: req.user.id
+    };
 
-      var output = '';
-      resHttps.on('data', function(chunk) {
-        output += chunk;
-      });
-
-      resHttps.on('end', function() {
-        var obj = JSON.parse(output);
-        console.log(obj);
-        res.redirect('/');
-      });
-
-    }).on('error', function(err) {
-      console.log(err);
+    Request(options, 'GET', params, function(result) {
+      console.log(result);
+      res.redirect('/');
     });
   });
 }
