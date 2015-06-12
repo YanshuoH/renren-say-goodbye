@@ -39,6 +39,7 @@ module.exports = function(app, config, passport) {
     };
 
     https.get(options, function(resHttps) {
+      resHttps.setEncoding('utf-8');
       console.log('STATUS: ' + resHttps.statusCode);
 
       var output = '';
@@ -55,5 +56,5 @@ module.exports = function(app, config, passport) {
     }).on('error', function(err) {
       console.log(err);
     });
-  })
+  });
 }
