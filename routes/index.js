@@ -28,7 +28,7 @@ module.exports = function(app, config, passport) {
     }
   );
 
-  app.get('/blog', function(req, res) {
+  app.get('/blog', [requiresLogin], function(req, res) {
     var options = {
       host: config.renren_api_uri,
       endpoint: config.api.blog_list,
@@ -36,11 +36,14 @@ module.exports = function(app, config, passport) {
 
     var params = {
       access_token: req.user.accessToken,
-      ownerId: req.user.id
+      ownerId: req.user.id,
+      pageSize: 20,
+      pageNumber: 1
     };
 
-    Request(options, 'GET', params, function(result) {
-      console.log(result);
+    Request(options, 'GET', params, function(err, data) {
+      console.log(err);
+      console.log(JSON.parse(data));
       res.redirect('/');
     });
   });
