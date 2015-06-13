@@ -8,7 +8,7 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var passport = require('passport');
 var RenrenStrategy = require('passport-renren').Strategy;
-var session = require('express-session');
+var session = require('cookie-session');
 var mongo = require('mongo');
 var monk = require('monk');
 var async = require('async');
@@ -33,9 +33,9 @@ app.use(cookieParser());
 
 app.use(session({
     secret: 'whatever',
-    resave: true,
-    saveUninitialized: true,
-    cookie: 7*24*3600000
+    cookie: {
+      maxAge: 3600000 * 7
+    }
 }));
 app.use(passport.initialize());
 app.use(passport.session());
