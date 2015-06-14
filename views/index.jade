@@ -9,6 +9,15 @@ block content
   script(src='/socket.io.js')
   script.
     var socket = io();
-    socket.on('message', function (message) {
-        console.log('get message: ' + message);
+    socket.on('log', function (message) {
+        console.log('get log: ' + message);
+    });
+    socket.on('error', function (message) {
+        console.log('get error: ' + message);
+    });
+    socket.on('warn', function (message) {
+        console.log('get warn: ' + message);
+    });
+    socket.on('info', function (message) {
+        console.log('get info: ' + message);
     });

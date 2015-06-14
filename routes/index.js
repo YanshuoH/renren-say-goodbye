@@ -1,6 +1,7 @@
 module.exports = function(app, config, passport) {
   var config = require('../config');
   var Request = require('../lib/Request');
+  var Logger = require('../lib/Logger');
 
   var requiresLogin = function(req, res, next) {
     if (req.isAuthenticated()) {
@@ -49,10 +50,6 @@ module.exports = function(app, config, passport) {
   });
 
   app.get('/socket', function(req, res) {
-    setInterval(function() {
-      require('../lib/Socket').emit('message', 'This is a message')
-    }, 1000);
-
     res.send('OK');
   })
 }
