@@ -150,13 +150,17 @@ passport.use(new RenrenStrategy({
   });
 }));
 
-module.exports = app;
-
-
+// HTTPS pem keys
 httpsOptions = {
   key: fs.readFileSync('./key.pem'),
   cert: fs.readFileSync('./key-cert.pem')
 }
-https.createServer(httpsOptions, app).listen(3000, function() {
+// Create server
+var server = https.createServer(httpsOptions, app).listen(3000, function() {
   console.log('Express server lisening on port 3000');
 });
+// Initialize Socket.io
+var io = require('./lib/Socket').listen(server);
+
+module.exports.server = server;
+module.exports.io = io;

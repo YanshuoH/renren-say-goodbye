@@ -19,6 +19,7 @@
     "passport": "^0.2.2",
     "passport-renren": "^0.1.3",
     "serve-favicon": "~2.2.1",
+    "socket.io": "^1.3.5",
     "stylus": "0.42.3"
   }
 }

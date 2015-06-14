@@ -47,4 +47,12 @@ module.exports = function(app, config, passport) {
       res.redirect('/');
     });
   });
+
+  app.get('/socket', function(req, res) {
+    setInterval(function() {
+      require('../lib/Socket').emit('message', 'This is a message')
+    }, 1000);
+
+    res.send('OK');
+  })
 }

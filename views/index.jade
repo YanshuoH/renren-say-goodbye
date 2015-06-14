@@ -5,3 +5,10 @@ block content
   p Welcome to #{title}
   p
     a(href='/login') Login with renren
+
+  script(src='/socket.io.js')
+  script.
+    var socket = io();
+    socket.on('message', function (message) {
+        console.log('get message: ' + message);
+    });
