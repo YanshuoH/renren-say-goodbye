@@ -1,0 +1,28 @@
+{
+  "name": "renren-say-goodbye",
+  "version": "0.0.1",
+  "homepage": "https://github.com/YanshuoH/renren-say-goodbye",
+  "authors": [
+    "YanshuH <hys235606751@gmail.com>"
+  ],
+  "main": "app.js",
+  "keywords": [
+    "renren",
+    "api",
+    "extract",
+    "socketio",
+    "node"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "public/vendor",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "~2.1.4"
+  }
+}
