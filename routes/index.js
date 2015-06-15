@@ -2,6 +2,7 @@ module.exports = function(app, config, passport) {
   var config = require('../config');
   var Request = require('../lib/Request');
   var Logger = require('../lib/Logger');
+  var BlogScraper = require('../lib/BlogScraper');
 
   var requiresLogin = function(req, res, next) {
     if (req.isAuthenticated()) {
@@ -30,23 +31,7 @@ module.exports = function(app, config, passport) {
   );
 
   app.get('/blog', [requiresLogin], function(req, res) {
-    var options = {
-      host: config.renren_api_uri,
-      endpoint: config.api.blog_list,
-    };
-
-    var params = {
-      access_token: req.user.accessToken,
-      ownerId: req.user.id,
-      pageSize: 20,
-      pageNumber: 1
-    };
-
-    Request(options, 'GET', params, function(err, data) {
-      console.log(err);
-      console.log(JSON.parse(data));
-      res.redirect('/');
-    });
+    BlogScraper(req.user);
   });
 
   app.get('/socket', function(req, res) {
