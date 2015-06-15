@@ -36,5 +36,9 @@ module.exports = function(app, config, passport) {
 
   app.get('/socket', function(req, res) {
     res.send('OK');
-  })
+  });
+
+  app.get('/test', function(req, res) {
+    Logger('error', {error: 'this is an error'}, 'test');
+  });
 }
