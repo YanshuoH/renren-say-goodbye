@@ -2,5 +2,9 @@ module.exports = {
   clientID: 'xxx',
   clientSecret: 'xxx',
   db_uri: 'localhost:27017/renren',
-  renren_api_uri: 'api.renren.com'
+  renren_api_uri: 'api.renren.com',
+  api: {
+    blog_list: '/v2/blog/list',
+    blog: '/v2/blog/get',
+  }
 }
