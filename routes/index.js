@@ -31,7 +31,9 @@ module.exports = function(app, config, passport) {
   );
 
   app.get('/blog', [requiresLogin], function(req, res) {
-    BlogScraper(req.user);
+    BlogScraper(req.user, function() {
+      res.send('End of Request: BlogScraper');
+    });
   });
 
   app.get('/socket', function(req, res) {
