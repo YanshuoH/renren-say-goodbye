@@ -3,6 +3,7 @@ module.exports = function(app, config, passport) {
   var Request = require('../lib/Request');
   var Logger = require('../lib/Logger');
   var BlogScraper = require('../lib/BlogScraper');
+  var utils = require('../lib/utils');
 
   var requiresLogin = function(req, res, next) {
     if (req.isAuthenticated()) {
@@ -37,6 +38,11 @@ module.exports = function(app, config, passport) {
   });
 
   app.get('/socket', function(req, res) {
+    res.send('OK');
+  });
+
+  app.get('/test', function(req, res) {
+    utils.cleanDir(config.output.baseDir);
     res.send('OK');
   });
 }

@@ -26,6 +26,8 @@
  * @param {Object} blog
  */
 var fs = require('fs');
+var config = require('../config');
+var utils = require('../lib/utils');
 
 var Blog = function (blog) {
   var fileName = getFilename(blog.title, blog.createTime);
@@ -46,8 +48,8 @@ var Blog = function (blog) {
    * @return {string}
    */
   function getFilename(title, createTime) {
-    var filename = title.replace(/ /g, "_");
-    filename += '-' + formatDate(createTime);
+    var filename = formatDate(createTime);
+    filename += '-' + title.replace(/ /g, "_");
 
     return filename;
   }

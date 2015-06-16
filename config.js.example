@@ -6,5 +6,10 @@ module.exports = {
   api: {
     blog_list: '/v2/blog/list',
     blog: '/v2/blog/get',
+  },
+  output: {
+    baseDir: 'output',
+    blogs: 'blogs',
+    photos: 'photos'
   }
 }
