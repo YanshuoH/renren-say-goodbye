@@ -27,8 +27,10 @@
  */
 var fs = require('fs');
 var path = require('path');
+var async = require('async');
 var config = require('../config');
 var utils = require('../lib/utils');
+var Logger = require('../lib/Logger');
 
 /**
  * Blog saver core
@@ -37,19 +39,35 @@ var utils = require('../lib/utils');
  * @param {string} blogsDir;
  */
 var Blog = function (blog, blogsDir) {
-  var fileName = getFilename(blog.title, blog.createTime);
-  fs.writeFile(
-    path.join(
-      blogsDir,
-      fileName + '.html'
-    ),
-    blog.content,
-    function(err) {
-      if (err) {
-        return console.log(err);
-      }
+  var filename = getFilename(blog.title, blog.createTime);
 
-      console.log('saved');
+  async.waterfall([
+    function(callback) {
+      buildHtml(blog, callback);
+    },
+    function(html, callback) {
+      fs.writeFile(
+        path.join(
+          blogsDir,
+          filename + '.html'
+        ),
+        html,
+        function(err) {
+          if (err) {
+            callback(err);
+          }
+
+          callback();
+      });
+
+    }
+  ], function(err, done) {
+    if (err) {
+      Logger('error', err, 'blog');
+    } else {
+      Logger('info', 'Blog "' + blog.title + '" saved to ' + filename + '.html');
+    }
+
   });
 
   /**
@@ -89,6 +107,31 @@ var Blog = function (blog, blogsDir) {
 
     return [year, month, day].join('-');
   }
+
+  /**
+   * Inject blog content to build a html file
+   *
+   * @param {Object}  blog  Blog object
+   *
+   * @return {string} Generated HTML string
+   */
+  function buildHtml(blog, callback) {
+    fs.readFile('templates/blogTemplate.html', function(err, buffer) {
+      if (err) {
+        Logger('error', err, 'blog');
+      }
+
+      var data = buffer.toString();
+      ['title', 'content'].forEach(function(field) {
+        var brace = '{{ ' + field + ' }}';
+        var pattern = new RegExp(brace, 'g');
+        data = data.replace(pattern, blog[field]);
+      });
+
+      callback(null, data);
+    });
+  }
+
 
 }
 
