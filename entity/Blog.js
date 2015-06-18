@@ -26,17 +26,30 @@
  * @param {Object} blog
  */
 var fs = require('fs');
+var path = require('path');
 var config = require('../config');
 var utils = require('../lib/utils');
 
-var Blog = function (blog) {
+/**
+ * Blog saver core
+ *
+ * @param {Object} blog Blog JSON object from api
+ * @param {string} blogsDir;
+ */
+var Blog = function (blog, blogsDir) {
   var fileName = getFilename(blog.title, blog.createTime);
-  fs.writeFile('./out/' + fileName + '.html', blog.content, function(err) {
-    if (err) {
-      return console.log(err);
-    }
+  fs.writeFile(
+    path.join(
+      blogsDir,
+      fileName + '.html'
+    ),
+    blog.content,
+    function(err) {
+      if (err) {
+        return console.log(err);
+      }
 
-    console.log('saved');
+      console.log('saved');
   });
 
   /**
