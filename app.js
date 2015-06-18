@@ -34,7 +34,7 @@ app.use(cookieParser());
 app.use(session({
     secret: 'whatever',
     cookie: {
-      maxAge: 3600000 * 7
+      maxAge: 3600 * 24 * 7
     }
 }));
 app.use(passport.initialize());
