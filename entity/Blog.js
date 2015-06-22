@@ -137,44 +137,54 @@ var Blog = function (blog, blogsDir) {
       // Images handling
       var images = $('img');
       if (images.length > 0) {
-        console.log(images);
-        // Parsing every images, download it into local server
-        images.each(function(index, imageNode) {
-          // Only parse the image nodes with src attributes, otherwise it's useless
-          if (imageNode.attribs.src !== undefined) {
-            var imgUrl = imageNode.attribs.src;
-            var uniqueName = new Date().getTime() + '-' + path.basename(imgUrl);
-            // Run simple http request
-            Request.get(imgUrl, null, function(err, data) {
+        downloadImages(images, $, blog);
+      }
+
+      callback(null, $.html());
+    })
+  }
+
+  /**
+   * Download images, replace in html, images's src
+   *
+   * @param {Array}  images  Array of cheerio objects
+   * @param {Object} $       Object of cheerio
+   * @param {Object} blog    Blog object
+   */
+  function downloadImages(images, $, blog) {
+    // Parsing every images, download it into local server
+    images.each(function(index, imageNode) {
+      // Only parse the image nodes with src attributes, otherwise it's useless
+      if (imageNode.attribs.src !== undefined) {
+        var imgUrl = imageNode.attribs.src;
+        var uniqueName = new Date().getTime() + '-' + path.basename(imgUrl);
+        // Run simple http request
+        Request.get(imgUrl, null, function(err, data) {
+          if (err) {
+            callback(err);
+          }
+
+          fs.writeFile(
+            path.join(
+              blogsDir,
+              uniqueName
+            ),
+            data,
+            'binary',
+            function(err) {
               if (err) {
                 callback(err);
               }
+              Logger('info', 'Blog: ' + blog.title + ' : image ' + uniqueName + ' downloaded');
+          });
+        }, 'binary', true);
 
-              fs.writeFile(
-                path.join(
-                  blogsDir,
-                  uniqueName
-                ),
-                data,
-                'binary',
-                function(err) {
-                  if (err) {
-                    callback(err);
-                  }
-                  console.log('img saved');
-              });
-            }, 'binary', true);
-
-            console.log(imageNode);
-            // Rename image node's src
-            $(imageNode).attr('src', uniqueName);
-          }
-        });
+        // Replace img src
+        $(imageNode).attr('src', uniqueName);
       }
-
-      callback(null, data);
-    })
+    });
   }
+
 }
 
 module.exports = Blog;
