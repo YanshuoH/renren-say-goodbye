@@ -4,6 +4,7 @@ module.exports = function(app, config, passport) {
   var Request = require('../lib/Request');
   var Logger = require('../lib/Logger');
   var BlogScraper = require('../lib/BlogScraper');
+  var AlbumScraper = require('../lib/AlbumScraper');
   var Blog = require('../entity/Blog');
   var utils = require('../lib/utils');
 
@@ -33,9 +34,15 @@ module.exports = function(app, config, passport) {
     }
   );
 
-  app.get('/blog', [requiresLogin], function(req, res) {
+  app.get('/blogs', [requiresLogin], function(req, res) {
     BlogScraper(req.user, function() {
       res.send('End of Request: BlogScraper');
+    });
+  });
+
+  app.get('/photos', [requiresLogin], function(req, res) {
+    AlbumScraper(req.user, function() {
+      res.send('End of Request: AlbumScraper');
     });
   });
 
