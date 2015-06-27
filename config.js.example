@@ -5,11 +5,12 @@ module.exports = {
   renren_api_uri: 'api.renren.com',
   api: {
     blog_list: '/v2/blog/list',
-    blog: '/v2/blog/get',
+    album_list: '/v2/album/list',
+    photo_list: '/v2/photo/list',
   },
   output: {
     baseDir: 'output',
     blogs: 'blogs',
-    photos: 'photos'
+    albums: 'albums'
   }
 }
