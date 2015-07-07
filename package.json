@@ -6,6 +6,7 @@
     "start": "node ./bin/www"
   },
   "dependencies": {
+    "amqp": "^0.2.4",
     "async": "^1.1.0",
     "body-parser": "~1.12.4",
     "cheerio": "^0.19.0",

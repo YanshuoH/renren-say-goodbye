@@ -1,5 +1,12 @@
 var RenrenStrategy = require('passport-renren').Strategy;
 
+/**
+ * Handles passport authentification
+ * @param {object} app
+ * @param {object} db
+ * @param {object} passport
+ * @param {object} config
+ */
 module.exports = function(app, db, passport, config) {
   // Serializer
   passport.serializeUser(function(user, done) {
