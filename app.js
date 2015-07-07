@@ -10,9 +10,13 @@ var passport = require('passport');
 var session = require('cookie-session');
 var mongo = require('mongo');
 var monk = require('monk');
+var amqp = require('amqp');
+var async = require('async');
 
 var config = require('./config');
 var routes = require('./routes/index');
+var Logger = require('./lib/Logger');
+var RabbitHub = require('./lib/RabbitHub');
 
 var app = express();
 var db = monk(config.db_uri);
@@ -90,5 +94,43 @@ var server = https.createServer(httpsOptions, app).listen(3000, function() {
 // Initialize Socket.io
 var io = require('./lib/Socket').listen(server);
 
+// Initialize a RabbitMQ (amqp) wrapper lib
+// create a stand alone event listener hub with a funny name
+amqpConnection = amqp.createConnection(config.amqp);
+var rabbitHub = new RabbitHub(amqpConnection, config);
+// When connection ready, init an exchange
+async.waterfall([
+  function(callback) {
+    rabbitHub.ready(function() {
+      Logger('log', 'RabbitMQ connection is ready', 'rabbitmq');
+      callback(null);
+    });
+  },
+  function(callback) {
+    rabbitHub.initExchange(function(exchange) {
+      Logger('log', 'RabbitMQ exchange: ' + exchange.name + ' is open');
+      rabbitHub.exchange = exchange;
+      callback(null);
+    });
+  },
+  function(callback) {
+    rabbitHub.createQueue('default', function(queue) {
+      Logger('log', 'RabbitMQ queue default created', 'rabbitmq');
+      callback(null);
+    });
+  },
+  function(callback) {
+    rabbitHub.bindQueue('default', 'default', function() {
+      Logger('log', 'RabbitMQ queue default binded to routingKey default');
+      callback(null);
+    });
+  }
+], function(err) {
+  if (err) {
+    Logger('error', err);
+  }
+});
+
 module.exports.server = server;
 module.exports.io = io;
+module.exports.rabbitHub = rabbitHub;
