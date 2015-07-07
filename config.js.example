@@ -3,10 +3,18 @@ module.exports = {
   clientSecret: 'xxx',
   db_uri: 'localhost:27017/renren',
   renren_api_uri: 'api.renren.com',
+  renren_callback_url: 'https://127.0.0.1:3000/renren-auth/callback',
+  renren_scop: [
+    'read_user_blog',
+    'read_user_photo',
+    'read_user_album',
+    'read_user_status'
+  ],
   api: {
     blog_list: '/v2/blog/list',
+    blog: '/v2/blog/get',
     album_list: '/v2/album/list',
-    photo_list: '/v2/photo/list',
+    photo: '/v2/photo/list'
   },
   output: {
     baseDir: 'output',

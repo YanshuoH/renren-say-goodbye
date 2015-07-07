@@ -7,11 +7,9 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var passport = require('passport');
-var RenrenStrategy = require('passport-renren').Strategy;
 var session = require('cookie-session');
 var mongo = require('mongo');
 var monk = require('monk');
-var async = require('async');
 
 var config = require('./config');
 var routes = require('./routes/index');
@@ -39,6 +37,8 @@ app.use(session({
 }));
 app.use(passport.initialize());
 app.use(passport.session());
+
+require('./passport-auth')(app, db, passport, config);
 
 app.use(require('stylus').middleware(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -77,84 +77,12 @@ app.use(function(err, req, res, next) {
   });
 });
 
-passport.serializeUser(function(user, done) {
-  console.log('serialize user');
-  done(null, user.id);
-});
-
-passport.deserializeUser(function(id, done) {
-  console.log('deserialize user');
-  // query the current user from database
-  var userCollection = db.get('users');
-  userCollection.findOne({ id: id }, function(err, user) {
-    done(err, user);
-  });
-});
-
-// passport auth
-passport.use(new RenrenStrategy({
-  clientID: config.clientID,
-  clientSecret: config.clientSecret,
-  callbackURL: 'https://127.0.0.1:3000/renren-auth/callback',
-  scope: ['read_user_blog', 'read_user_photo', 'read_user_album', 'read_user_status']
-}, function(accessToken, refreshToken, profile, done) {
-  async.waterfall([
-    function(callback) {
-      var userCollection = db.get('users');
-
-      userCollection.findOne({ id: profile.id }, function(err, user) {
-        console.log('Found user id:' + profile.id);
-        if (err) {
-          callback(err);
-        } else {
-          callback(null, user, profile, accessToken);
-        }
-      })
-    },
-    function(user, profile, accessToken, callback) {
-      var userCollection = db.get('users');
-      if (user === undefined || user === null) {
-        user = {
-          id: profile.id,
-          name: profile.name,
-          accessToken: accessToken
-        }
-        userCollection.insert(user, function(err, doc) {
-          console.log('Save user');
-          if (err) {
-            callback(err);
-          } else {
-            callback(null, user);
-          }
-        });
-      } else {
-        user.accessToken = accessToken;
-        // update doc
-        userCollection.update(
-          { id: user.id },
-          { $set: { "accessToken": accessToken }},
-          function (err, doc) {
-            if (err) {
-              callback(err);
-            } else {
-              callback(null, user);
-            }
-          }
-        )
-      }
-
-      callback(null, user);
-    }
-  ], function(err, user) {
-    done(err, user);
-  });
-}));
-
 // HTTPS pem keys
 httpsOptions = {
   key: fs.readFileSync('./key.pem'),
   cert: fs.readFileSync('./key-cert.pem')
 }
+
 // Create server
 var server = https.createServer(httpsOptions, app).listen(3000, function() {
   console.log('Express server lisening on port 3000');
