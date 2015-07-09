@@ -3,10 +3,12 @@ module.exports = function(app, config, passport) {
   var config = require('../config');
   var Request = require('../lib/Request');
   var Logger = require('../lib/Logger');
+  var BlogProducer = require('../lib/Blog');
   var BlogScraper = require('../lib/BlogScraper');
   var AlbumScraper = require('../lib/AlbumScraper');
   var Blog = require('../entity/Blog');
   var utils = require('../lib/utils');
+  var RabbitDispatcher = require('../lib/RabbitDispatcher');
 
   var requiresLogin = function(req, res, next) {
     if (req.isAuthenticated()) {
@@ -17,7 +19,17 @@ module.exports = function(app, config, passport) {
   }
 
   app.get('/', function(req, res, next) {
-    res.render('index', { title: 'Express' });
+    if (req.isAuthenticated()) {
+      res.redirect('/console');
+    } else {
+      res.render('index', { title: 'Express' });
+    }
+  });
+
+  app.get('/console', function(req, res) {
+    // When initializing the console page, active consumers by RabbitDispatcher
+    var rabbitHub = require('../app').rabbitHub;
+    res.render('console', { title: 'Console' });
   });
 
   // Login middleware
@@ -30,7 +42,7 @@ module.exports = function(app, config, passport) {
     ),
     function(req, res) {
       console.log('ok');
-      res.redirect('/');
+      res.redirect('/console');
     }
   );
 
@@ -46,11 +58,11 @@ module.exports = function(app, config, passport) {
     });
   });
 
-  app.get('/socket', function(req, res) {
+  app.get('/test/socket', function(req, res) {
     res.send('OK');
   });
 
-  app.get('/test', function(req, res) {
+  app.get('/test/blog', function(req, res) {
     var blog = {
       id: 436446958,
       type: 'TYPE_RSS',
@@ -65,4 +77,15 @@ module.exports = function(app, config, passport) {
     Blog(blog, './output/blogs');
     res.send('OK');
   });
+
+  app.get('/test/producer', function(req, res) {
+    BlogProducer.producer(req.user, function() {
+      res.json({
+        type: 'blog',
+        status: 'finished',
+        message: 'End of request: Blog Producer'
+      });
+    });
+  });
+
 }

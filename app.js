@@ -11,12 +11,12 @@ var session = require('cookie-session');
 var mongo = require('mongo');
 var monk = require('monk');
 var amqp = require('amqp');
-var async = require('async');
 
 var config = require('./config');
 var routes = require('./routes/index');
 var Logger = require('./lib/Logger');
 var RabbitHub = require('./lib/RabbitHub');
+var RabbitDispatcher = require('./lib/RabbitDispatcher');
 
 var app = express();
 var db = monk(config.db_uri);
@@ -97,37 +97,45 @@ var io = require('./lib/Socket').listen(server);
 // Initialize a RabbitMQ (amqp) wrapper lib
 // create a stand alone event listener hub with a funny name
 amqpConnection = amqp.createConnection(config.amqp);
+
 var rabbitHub = new RabbitHub(amqpConnection, config);
-// When connection ready, init an exchange
-async.waterfall([
-  function(callback) {
-    rabbitHub.ready(function() {
-      Logger('log', 'RabbitMQ connection is ready', 'rabbitmq');
-      callback(null);
-    });
-  },
-  function(callback) {
-    rabbitHub.initExchange(function(exchange) {
-      Logger('log', 'RabbitMQ exchange: ' + exchange.name + ' is open');
-      rabbitHub.exchange = exchange;
-      callback(null);
-    });
-  },
-  function(callback) {
-    rabbitHub.createQueue('default', function(queue) {
-      Logger('log', 'RabbitMQ queue default created', 'rabbitmq');
-      callback(null);
-    });
-  },
-  function(callback) {
-    rabbitHub.bindQueue('default', 'default', function() {
-      Logger('log', 'RabbitMQ queue default binded to routingKey default');
-      callback(null);
-    });
+// Dispatcher options
+var dispatcherOptions = {
+  exchangeName: 'renren-exchange',
+  queueName: 'current',
+  routingKey: 'current',
+  queueOptions: {
+    autoDelete: false
   }
-], function(err) {
+}
+
+RabbitDispatcher.setup(rabbitHub, dispatcherOptions, function(err) {
   if (err) {
     Logger('error', err);
+  } else {
+    Logger('log', 'RabbitMQ initial setup done', 'rabbitmq');
+
+    // Define another queue for message delay
+    var queueOptions = {
+      queueName: 'delay',
+      queueOptions: {
+        durable: true,
+        autoDelete: false,
+        arguments: {
+          'x-message-ttl': 5000,
+          'x-dead-letter-exchange': 'renren-exchange',
+          'x-dead-letter-routing-key': 'current'
+        }
+      }
+    };
+
+    RabbitDispatcher.createAndBind(rabbitHub, queueOptions, function(err) {
+      if (err) {
+        Logger('err', err);
+      } else {
+        Logger('log', 'RabbitMQ delayed queue bind to ' + dispatcherOptions.exchangeName + ' exchange');
+      }
+    });
   }
 });
 
