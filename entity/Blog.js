@@ -161,7 +161,8 @@ var Blog = function (blog, blogsDir) {
         // Run simple http request
         Request.get(imgUrl, null, function(err, data) {
           if (err) {
-            callback(err);
+            Logger('error', err, 'blog');
+            return;
           }
 
           fs.writeFile(
@@ -173,7 +174,8 @@ var Blog = function (blog, blogsDir) {
             'binary',
             function(err) {
               if (err) {
-                callback(err);
+                Logger(err);
+                return;
               }
               Logger('info', 'Blog: ' + blog.title + ' : image ' + uniqueName + ' downloaded');
           });

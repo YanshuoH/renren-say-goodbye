@@ -3,10 +3,8 @@ module.exports = function(app, config, passport) {
   var config = require('../config');
   var Request = require('../lib/Request');
   var Logger = require('../lib/Logger');
-  var BlogProducer = require('../lib/Blog');
-  var BlogScraper = require('../lib/BlogScraper');
+  var BlogProducer = require('../lib/BlogProducer');
   var AlbumScraper = require('../lib/AlbumScraper');
-  var Blog = require('../entity/Blog');
   var utils = require('../lib/utils');
   var RabbitDispatcher = require('../lib/RabbitDispatcher');
 
@@ -28,7 +26,6 @@ module.exports = function(app, config, passport) {
 
   app.get('/console', function(req, res) {
     // When initializing the console page, active consumers by RabbitDispatcher
-    var rabbitHub = require('../app').rabbitHub;
     res.render('console', { title: 'Console' });
   });
 
@@ -47,8 +44,12 @@ module.exports = function(app, config, passport) {
   );
 
   app.get('/blogs', [requiresLogin], function(req, res) {
-    BlogScraper(req.user, function() {
-      res.send('End of Request: BlogScraper');
+    BlogProducer.producer(req.user, function() {
+      res.json({
+        type: 'blog',
+        status: 'finished',
+        message: 'End of request: Blog Producer'
+      });
     });
   });
 
@@ -61,31 +62,4 @@ module.exports = function(app, config, passport) {
   app.get('/test/socket', function(req, res) {
     res.send('OK');
   });
-
-  app.get('/test/blog', function(req, res) {
-    var blog = {
-      id: 436446958,
-      type: 'TYPE_RSS',
-      content: '<p>This is an example.</p><img alt="" src="http://1832.img.pp.sohu.com.cn/images/blog/2009/10/18/2/19/12512b27f11g213.jpg" border="0">',
-      createTime: '2009-11-22 14:04:25:000',
-      shareCount: 0,
-      title: 'Wish you were here',
-      accessControl: 'PUBLIC',
-      viewCount: 4,
-      commentCount: 0
-    };
-    Blog(blog, './output/blogs');
-    res.send('OK');
-  });
-
-  app.get('/test/producer', function(req, res) {
-    BlogProducer.producer(req.user, function() {
-      res.json({
-        type: 'blog',
-        status: 'finished',
-        message: 'End of request: Blog Producer'
-      });
-    });
-  });
-
 }
