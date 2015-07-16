@@ -22,9 +22,6 @@
  *
  */
 
-/**
- * @param {Object} blog
- */
 var fs = require('fs');
 var path = require('path');
 var async = require('async');
@@ -38,7 +35,7 @@ var Request = require('../lib/Request');
  * Blog saver core
  *
  * @param {Object} blog Blog JSON object from api
- * @param {string} blogsDir;
+ * @param {string} blogsDir
  */
 var Blog = function (blog, blogsDir) {
   var filename = getFilename(blog.title, blog.createTime);
@@ -81,33 +78,10 @@ var Blog = function (blog, blogsDir) {
    * @return {string}
    */
   function getFilename(title, createTime) {
-    var filename = formatDate(createTime);
+    var filename = utils.formatDate(createTime);
     filename += '-' + title.replace(/ /g, "_");
 
     return filename;
-  }
-
-  /**
-   * Out put from Date to 'YYYY-mm-dd'
-   *
-   * @param {Date} date
-   *
-   * @return string 'YYYY-mm-dd'
-   */
-  function formatDate(date) {
-    var d = new Date(date),
-      month = '' + (d.getMonth() + 1),
-      day = '' + d.getDate(),
-      year = d.getFullYear();
-
-    if (month.length < 2) {
-      month = '0' + month;
-    }
-    if (day.length < 2) {
-      day = '0' + day;
-    }
-
-    return [year, month, day].join('-');
   }
 
   /**
@@ -174,7 +148,7 @@ var Blog = function (blog, blogsDir) {
             'binary',
             function(err) {
               if (err) {
-                Logger(err);
+                Logger('error', err, 'blog');
                 return;
               }
               Logger('info', 'Blog: ' + blog.title + ' : image ' + uniqueName + ' downloaded');
