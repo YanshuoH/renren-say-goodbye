@@ -11,6 +11,7 @@ var session = require('cookie-session');
 var mongo = require('mongo');
 var monk = require('monk');
 var amqp = require('amqp');
+var async = require('async');
 
 var config = require('./config');
 var routes = require('./routes/index');
@@ -109,12 +110,18 @@ var dispatcherOptions = {
   }
 }
 
-RabbitDispatcher.setup(rabbitHub, dispatcherOptions, function(err) {
-  if (err) {
-    Logger('error', err);
-  } else {
-    Logger('log', 'RabbitMQ initial setup done', 'rabbitmq');
-
+async.waterfall([
+  function(callback) {
+    RabbitDispatcher.setup(rabbitHub, dispatcherOptions, function(err) {
+      if (err) {
+        callback(err);
+      } else {
+        Logger('log', 'RabbitMQ initial setup done', 'rabbitmq');
+        callback(null);
+      }
+    });
+  },
+  function(callback) {
     // Define another queue for message delay
     var queueOptions = {
       queueName: 'delay',
@@ -131,13 +138,26 @@ RabbitDispatcher.setup(rabbitHub, dispatcherOptions, function(err) {
 
     RabbitDispatcher.createAndBind(rabbitHub, queueOptions, function(err) {
       if (err) {
-        Logger('err', err);
+        callback(err);
       } else {
         Logger('log', 'RabbitMQ delayed queue bind to ' + dispatcherOptions.exchangeName + ' exchange');
+        callback(null);
       }
     });
+  },
+  function(callback) {
+    RabbitDispatcher.initConsumer(rabbitHub);
+    callback(null);
   }
+],
+function(err) {
+  if (err) {
+    Logger('error', err, 'rabbitmq');
+  }
+  Logger('log', 'RabbitMQ done initializing', 'rabbitmq');
 });
+
+
 
 module.exports.server = server;
 module.exports.io = io;
