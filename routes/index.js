@@ -4,7 +4,7 @@ module.exports = function(app, config, passport) {
   var Request = require('../lib/Request');
   var Logger = require('../lib/Logger');
   var BlogProducer = require('../lib/BlogProducer');
-  var AlbumScraper = require('../lib/AlbumScraper');
+  var AlbumProducer = require('../lib/AlbumProducer');
   var utils = require('../lib/utils');
   var RabbitDispatcher = require('../lib/RabbitDispatcher');
 
@@ -24,7 +24,7 @@ module.exports = function(app, config, passport) {
     }
   });
 
-  app.get('/console', function(req, res) {
+  app.get('/console', [requiresLogin], function(req, res) {
     // When initializing the console page, active consumers by RabbitDispatcher
     res.render('console', { title: 'Console' });
   });
@@ -54,8 +54,12 @@ module.exports = function(app, config, passport) {
   });
 
   app.get('/photos', [requiresLogin], function(req, res) {
-    AlbumScraper(req.user, function() {
-      res.send('End of Request: AlbumScraper');
+    AlbumProducer.producer(req.user, function() {
+      res.json({
+        type: 'album',
+        status: 'finished',
+        message: 'End of request: Album Producer'
+      });
     });
   });
 
