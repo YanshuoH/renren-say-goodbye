@@ -14,7 +14,7 @@ module.exports = {
     blog_list: '/v2/blog/list',
     blog: '/v2/blog/get',
     album_list: '/v2/album/list',
-    photo: '/v2/photo/list'
+    photo_list: '/v2/photo/list'
   },
   output: {
     baseDir: 'output',
