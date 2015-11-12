@@ -1,6 +1,8 @@
 # renren-say-goodbye
 Store photos/blogs/status before leaving it, using SocketIO, RabbitMQ, Cheerio etc...
 
+## This project is more a Proof Of Concept than a working tool
+
 ## Thoughts
 The core idea is quite simple:
 * make requests to renren api
